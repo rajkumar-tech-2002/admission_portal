@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
-import { Download, Search, ArchiveRestore } from 'lucide-react';
+import { Download, Search, ArchiveRestore, FileText } from 'lucide-react';
 import apiService from '../../services/api.service';
-import styles from '../../components/css/Dashboard.module.css'; // Reuse dashboard styles
+import styles from '../../components/css/Dashboard.module.css';
+import reportStyles from '../../components/css/RecordReport.module.css';
+import RecordReport from '../../components/layout/RecordReport';
 import toast from 'react-hot-toast';
 
 const ArchivedList = () => {
     const [records, setRecords] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [selectedRecordId, setSelectedRecordId] = useState(null);
     
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
@@ -191,6 +194,7 @@ const ArchivedList = () => {
                                     <th>Aadhaar</th>
                                     <th>Refer Email</th>
                                     <th>Status</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -212,11 +216,20 @@ const ArchivedList = () => {
                                                     {record.admission_status}
                                                 </span>
                                             </td>
+                                            <td>
+                                                <button 
+                                                    className={reportStyles.actionBtn}
+                                                    onClick={() => setSelectedRecordId(record.id)}
+                                                    title="View Report PDF"
+                                                >
+                                                    <FileText size={14} /> PDF
+                                                </button>
+                                            </td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="11" style={{ textAlign: 'center', padding: '2rem' }}>No archived records found</td>
+                                        <td colSpan="12" style={{ textAlign: 'center', padding: '2rem' }}>No archived records found</td>
                                     </tr>
                                 )}
                             </tbody>
@@ -257,6 +270,11 @@ const ArchivedList = () => {
                     </div>
                 )}
             </div>
+
+            {/* PDF Report Modal */}
+            {selectedRecordId && (
+                <RecordReport recordId={selectedRecordId} onClose={() => setSelectedRecordId(null)} />
+            )}
         </div>
     );
 };

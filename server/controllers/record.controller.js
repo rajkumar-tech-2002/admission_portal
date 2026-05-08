@@ -32,6 +32,20 @@ exports.getRecords = async (req, res, next) => {
     }
 };
 
+exports.getRecordById = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const record = await Record.getById(id);
+        if (record) {
+            res.status(200).json({ success: true, data: record });
+        } else {
+            res.status(404).json({ success: false, message: 'Record not found' });
+        }
+    } catch (error) {
+        next(error);
+    }
+};
+
 exports.updateStatus = async (req, res, next) => {
     try {
         const { id } = req.params;

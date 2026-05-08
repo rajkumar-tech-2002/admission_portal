@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
-import { Download, Search, MessageSquare, UserCheck, UserX, Users, Archive, LayoutDashboard } from 'lucide-react';
+import { Download, Search, MessageSquare, UserCheck, UserX, Users, Archive, LayoutDashboard, FileText } from 'lucide-react';
 import apiService from '../../services/api.service';
 import styles from '../../components/css/Dashboard.module.css';
+import reportStyles from '../../components/css/RecordReport.module.css';
+import RecordReport from '../../components/layout/RecordReport';
 import toast from 'react-hot-toast';
 
 const Dashboard = () => {
@@ -15,6 +17,7 @@ const Dashboard = () => {
         TotalArchived: 0
     });
     const [loading, setLoading] = useState(true);
+    const [selectedRecordId, setSelectedRecordId] = useState(null);
     
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
@@ -260,6 +263,7 @@ const Dashboard = () => {
                                 <th>Aadhaar</th>
                                 <th>Refer Email</th>
                                 <th>Status</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -287,11 +291,20 @@ const Dashboard = () => {
                                                 <option value="Discontinue">Discontinue</option>
                                             </select>
                                         </td>
+                                        <td>
+                                            <button 
+                                                className={reportStyles.actionBtn}
+                                                onClick={() => setSelectedRecordId(record.id)}
+                                                title="View Report PDF"
+                                            >
+                                                <FileText size={14} /> PDF
+                                            </button>
+                                        </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="11" style={{ textAlign: 'center', padding: '2rem' }}>No records found</td>
+                                    <td colSpan="12" style={{ textAlign: 'center', padding: '2rem' }}>No records found</td>
                                 </tr>
                             )}
                         </tbody>
@@ -332,6 +345,11 @@ const Dashboard = () => {
                 </div>
             )}
             </div>
+
+            {/* PDF Report Modal */}
+            {selectedRecordId && (
+                <RecordReport recordId={selectedRecordId} onClose={() => setSelectedRecordId(null)} />
+            )}
         </div>
     );
 };

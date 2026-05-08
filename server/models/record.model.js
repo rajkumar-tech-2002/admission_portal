@@ -11,7 +11,7 @@ class Record {
 
         let nextId = 1;
         if (rows.length > 0) {
-            const lastRegId = rows[0].reg_id;
+            const lastRegId = String(rows[0].reg_id);
             const lastIdSequence = parseInt(lastRegId.substring(4), 10);
             nextId = lastIdSequence + 1;
         }
@@ -95,6 +95,11 @@ class Record {
 
         const [rows] = await db.execute(sql, params);
         return rows;
+    }
+
+    static async getById(id) {
+        const [rows] = await db.execute('SELECT * FROM record_master WHERE id = ?', [id]);
+        return rows.length > 0 ? rows[0] : null;
     }
 
     static async updateStatus(id, status) {

@@ -9,10 +9,13 @@ router.post('/', recordController.createRecord);
 // Protected route for admin datatable
 router.get('/', authMiddleware, recordController.getRecords);
 
+// Protected route for stats (must be before /:id)
+router.get('/stats', authMiddleware, recordController.getStats);
+
+// Protected route to get a single record by id
+router.get('/:id', authMiddleware, recordController.getRecordById);
+
 // Protected route to update status
 router.put('/:id/status', authMiddleware, recordController.updateStatus);
-
-// Protected route for stats
-router.get('/stats', authMiddleware, recordController.getStats);
 
 module.exports = router;
