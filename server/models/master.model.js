@@ -1,0 +1,89 @@
+const db = require('../config/db.config');
+
+class Master {
+    static async getAllDepartments() {
+        const [rows] = await db.execute('SELECT * FROM department_master');
+        return rows;
+    }
+
+    static async getAllStudies() {
+        const [rows] = await db.execute('SELECT * FROM study_master');
+        return rows;
+    }
+
+    static async getAllCommunities() {
+        const [rows] = await db.execute('SELECT * FROM community_master');
+        return rows;
+    }
+
+    static async getAllAdmissionTypes() {
+        const [rows] = await db.execute('SELECT * FROM admission_type_master');
+        return rows;
+    }
+
+    static async getAllReferenceTypes() {
+        const [rows] = await db.execute('SELECT * FROM reference_type_master');
+        return rows;
+    }
+
+    static async getAllAdmissionStatuses() {
+        const [rows] = await db.execute('SELECT * FROM admission_status_master');
+        return rows;
+    }
+
+    static async getValidDate() {
+        const [rows] = await db.execute('SELECT * FROM valid_date_master LIMIT 1');
+        return rows[0];
+    }
+
+    // Generic CRUD
+    static getTable(type) {
+        const mapping = {
+            'departments': 'department_master',
+            'studies': 'study_master',
+            'communities': 'community_master',
+            'admission-types': 'admission_type_master',
+            'reference-types': 'reference_type_master',
+            'admission-statuses': 'admission_status_master',
+            'valid-date': 'valid_date_master'
+        };
+        return mapping[type];
+    }
+
+    static async create(type, data) {
+        const table = this.getTable(type);
+        if (!table) throw new Error('Invalid table type');
+
+        const keys = Object.keys(data);
+        const values = Object.values(data);
+        const placeholders = keys.map(() => '?').join(',');
+        
+        const sql = `INSERT INTO ${table} (${keys.join(',')}) VALUES (${placeholders})`;
+        const [result] = await db.execute(sql, values);
+        return result.insertId;
+    }
+
+    static async update(type, id, data) {
+        const table = this.getTable(type);
+        if (!table) throw new Error('Invalid table type');
+
+        const keys = Object.keys(data);
+        const values = Object.values(data);
+        const setClause = keys.map(key => `${key} = ?`).join(',');
+        
+        const sql = `UPDATE ${table} SET ${setClause} WHERE id = ?`;
+        const [result] = await db.execute(sql, [...values, id]);
+        return result.affectedRows > 0;
+    }
+
+    static async delete(type, id) {
+        const table = this.getTable(type);
+        if (!table) throw new Error('Invalid table type');
+
+        const sql = `DELETE FROM ${table} WHERE id = ?`;
+        const [result] = await db.execute(sql, [id]);
+        return result.affectedRows > 0;
+    }
+}
+
+module.exports = Master;

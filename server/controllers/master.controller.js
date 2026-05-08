@@ -1,0 +1,65 @@
+const Master = require('../models/master.model');
+
+exports.getAllMasterData = async (req, res, next) => {
+    try {
+        const departments = await Master.getAllDepartments();
+        const studies = await Master.getAllStudies();
+        const communities = await Master.getAllCommunities();
+        const admissionTypes = await Master.getAllAdmissionTypes();
+        const referenceTypes = await Master.getAllReferenceTypes();
+        const admissionStatuses = await Master.getAllAdmissionStatuses();
+
+        res.status(200).json({
+            success: true,
+            data: {
+                departments,
+                studies,
+                communities,
+                admissionTypes,
+                referenceTypes,
+                admissionStatuses,
+                validDate: await Master.getValidDate()
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.createData = async (req, res, next) => {
+    try {
+        const { table } = req.params;
+        const id = await Master.create(table, req.body);
+        res.status(201).json({ success: true, message: 'Data added successfully', id });
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.updateData = async (req, res, next) => {
+    try {
+        const { table, id } = req.params;
+        const success = await Master.update(table, id, req.body);
+        if (success) {
+            res.status(200).json({ success: true, message: 'Data updated successfully' });
+        } else {
+            res.status(404).json({ success: false, message: 'Data not found' });
+        }
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.deleteData = async (req, res, next) => {
+    try {
+        const { table, id } = req.params;
+        const success = await Master.delete(table, id);
+        if (success) {
+            res.status(200).json({ success: true, message: 'Data deleted successfully' });
+        } else {
+            res.status(404).json({ success: false, message: 'Data not found' });
+        }
+    } catch (error) {
+        next(error);
+    }
+};
