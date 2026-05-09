@@ -63,3 +63,16 @@ exports.deleteData = async (req, res, next) => {
         next(error);
     }
 };
+
+exports.getEmailLogs = async (req, res, next) => {
+    try {
+        const { search } = req.query;
+        const logs = await Master.getEmailLogs(search);
+        res.status(200).json({
+            success: true,
+            data: logs
+        });
+    } catch (error) {
+        next(error);
+    }
+};

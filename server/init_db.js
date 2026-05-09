@@ -106,10 +106,32 @@ const initDB = async () => {
                 
                 admission_status VARCHAR(255) NOT NULL DEFAULT 'Enquiry',
                 
+                email_status ENUM('Pending', 'Sent', 'Failed') DEFAULT 'Pending',
+                email_sent_at DATETIME NULL,
+                
                 admission_date_time DATETIME DEFAULT CURRENT_TIMESTAMP,
                 
                 archive_status VARCHAR(100) NOT NULL DEFAULT 'New',
                 
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS email_logs (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                record_id INT NOT NULL,
+                reg_id VARCHAR(255) NOT NULL,
+                recipient_email VARCHAR(255) NOT NULL,
+                status ENUM('Sent', 'Failed') NOT NULL,
+                error_message TEXT,
+                sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (record_id) REFERENCES record_master(id) ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS valid_date_master (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                date_count INT NOT NULL DEFAULT 30,
+                archive_status TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             );
@@ -169,6 +191,11 @@ const initDB = async () => {
         const [statusCount] = await multiConnection.query('SELECT COUNT(*) as count FROM admission_status_master');
         if (statusCount[0].count === 0) {
             await multiConnection.query(`INSERT INTO admission_status_master (admission_status) VALUES ('Enquiry'), ('Admitted'), ('Discontinue');`);
+        }
+
+        const [validDateCount] = await multiConnection.query('SELECT COUNT(*) as count FROM valid_date_master');
+        if (validDateCount[0].count === 0) {
+            await multiConnection.query(`INSERT INTO valid_date_master (date_count, archive_status) VALUES (30, 'Discontinue');`);
         }
 
         // Insert Admin User

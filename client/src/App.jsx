@@ -6,6 +6,7 @@ import Dashboard from './pages/Admin/Dashboard';
 import ArchivedList from './pages/Admin/ArchivedList';
 import ChangePassword from './pages/Admin/ChangePassword';
 import MasterManagementPage from './pages/Admin/Master/MasterManagementPage';
+import EmailLogs from './pages/Admin/Master/EmailLogs';
 import AdminLayout from './components/layout/AdminLayout';
 import ToastProvider from './components/layout/ToastProvider';
 
@@ -110,6 +111,9 @@ function App() {
               ]}
             />
           } />
+
+          <Route path="master/email-logs" element={<EmailLogs />} />
+
           <Route path="*" element={<Navigate to="dashboard" replace />} />
         </Route>
       </Routes>

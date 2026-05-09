@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { 
     LayoutDashboard, LogOut, Menu, X, Archive, Settings, ChevronDown, ChevronRight,
-    Building2, GraduationCap, Users2, FileCheck, UserPlus, Activity, Calendar, KeyRound 
+    Building2, GraduationCap, Users2, FileCheck, UserPlus, Activity, Calendar, KeyRound, Mail
 } from 'lucide-react';
 import Navbar from './Navbar';
 import Footer from './Footer';
@@ -118,6 +118,9 @@ const AdminLayout = ({ children }) => {
                                     </NavLink>
                                     <NavLink to="/admin/master/valid-date" className={({ isActive }) => isActive ? `${styles.subNavItem} ${styles.activeSub}` : styles.subNavItem} onClick={closeSidebar}>
                                         <Calendar size={16} /> Valid Date Master
+                                    </NavLink>
+                                    <NavLink to="/admin/master/email-logs" className={({ isActive }) => isActive ? `${styles.subNavItem} ${styles.activeSub}` : styles.subNavItem} onClick={closeSidebar}>
+                                        <Mail size={16} /> Email Logs
                                     </NavLink>
                                     <NavLink to="/admin/change-password" className={({ isActive }) => isActive ? `${styles.subNavItem} ${styles.activeSub}` : styles.subNavItem} onClick={closeSidebar}>
                                         <KeyRound size={16} /> Change Password

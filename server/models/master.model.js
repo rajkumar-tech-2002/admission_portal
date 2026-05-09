@@ -84,6 +84,21 @@ class Master {
         const [result] = await db.execute(sql, [id]);
         return result.affectedRows > 0;
     }
+
+    static async getEmailLogs(search = '') {
+        let sql = 'SELECT * FROM email_logs';
+        let params = [];
+
+        if (search) {
+            sql += ' WHERE reg_id LIKE ? OR recipient_email LIKE ? OR status LIKE ? OR error_message LIKE ?';
+            const searchTerm = `%${search}%`;
+            params.push(searchTerm, searchTerm, searchTerm, searchTerm);
+        }
+
+        sql += ' ORDER BY sent_at DESC';
+        const [rows] = await db.execute(sql, params);
+        return rows;
+    }
 }
 
 module.exports = Master;

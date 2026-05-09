@@ -196,6 +196,11 @@
 .status-Admitted { background-color: #d1fae5; color: #065f46; }
 .status-Discontinue { background-color: #fee2e2; color: #b91c1c; }
 
+/* Email Status Colors */
+.email-Pending { background-color: #f1f5f9; color: #64748b; }
+.email-Sent { background-color: #d1fae5; color: #065f46; }
+.email-Failed { background-color: #fee2e2; color: #b91c1c; }
+
 .exportBtn {
     background-color: #10b981;
     color: white;

@@ -18,4 +18,7 @@ router.get('/:id', authMiddleware, recordController.getRecordById);
 // Protected route to update status
 router.put('/:id/status', authMiddleware, recordController.updateStatus);
 
+// Protected route to send/resend email
+router.post('/:id/send-email', authMiddleware, recordController.sendEmail);
+
 module.exports = router;

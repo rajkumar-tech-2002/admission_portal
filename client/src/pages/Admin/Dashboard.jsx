@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
-import { Download, Search, MessageSquare, UserCheck, UserX, Users, Archive, LayoutDashboard, FileText } from 'lucide-react';
+import { Download, Search, MessageSquare, UserCheck, UserX, Users, Archive, LayoutDashboard, FileText, Mail } from 'lucide-react';
 import apiService from '../../services/api.service';
 import styles from '../../components/css/Dashboard.module.css';
 import reportStyles from '../../components/css/RecordReport.module.css';
 import RecordReport from '../../components/layout/RecordReport';
 import toast from 'react-hot-toast';
+import { formatDate, formatDateTime } from '../../utils/dateFormatter';
 
 const Dashboard = () => {
     const [records, setRecords] = useState([]);
@@ -82,10 +83,28 @@ const Dashboard = () => {
                 setRecords(records.map(record => 
                     record.id === id ? { ...record, admission_status: newStatus } : record
                 ));
+                toast.success('Status updated successfully');
             }
         } catch (error) {
             console.error('Error updating status:', error);
             toast.error('Failed to update status');
+        }
+    };
+
+    const handleSendEmail = async (id) => {
+        const loadingToast = toast.loading('Sending email...');
+        try {
+            const response = await apiService.post(`/records/${id}/send-email`);
+            if (response.data.success) {
+                toast.success('Email sent successfully', { id: loadingToast });
+                // Refresh records to update email status
+                fetchRecords();
+            } else {
+                toast.error(response.data.message || 'Failed to send email', { id: loadingToast });
+            }
+        } catch (error) {
+            console.error('Error sending email:', error);
+            toast.error(error.response?.data?.message || 'Failed to send email', { id: loadingToast });
         }
     };
 
@@ -109,7 +128,7 @@ const Dashboard = () => {
             'Dept': r.selected_dept,
             'Course': r.selected_course,
             'Status': r.admission_status,
-            'Date': new Date(r.admission_date_time).toLocaleDateString()
+            'Date': formatDate(r.admission_date_time)
         }));
 
         const ws = XLSX.utils.json_to_sheet(exportData);
@@ -262,6 +281,7 @@ const Dashboard = () => {
                                 <th>Course</th>
                                 <th>Aadhaar</th>
                                 <th>Refer Email</th>
+                                <th>Email Status</th>
                                 <th>Status</th>
                                 <th>Action</th>
                             </tr>
@@ -271,7 +291,7 @@ const Dashboard = () => {
                                 currentRecords.map((record) => (
                                     <tr key={record.id}>
                                         <td><strong>{record.reg_id}</strong></td>
-                                        <td>{new Date(record.admission_date_time).toLocaleString()}</td>
+                                        <td>{formatDateTime(record.admission_date_time)}</td>
                                         <td>{record.std_name}</td>
                                         <td>{record.reg_no_12th}</td>
                                         <td>{record.std_mobile_no}</td>
@@ -280,6 +300,11 @@ const Dashboard = () => {
                                         <td>{record.selected_course}</td>
                                         <td>{record.aadhaar_no}</td>
                                         <td>{record.reference_email}</td>
+                                        <td>
+                                            <span className={`${styles.statusBadge} ${styles['email-' + (record.email_status || 'Pending')]}`}>
+                                                {record.email_status || 'Pending'}
+                                            </span>
+                                        </td>
                                         <td>
                                             <select 
                                                 className={`${styles.statusSelect} ${styles['status-' + record.admission_status]}`}
@@ -292,13 +317,23 @@ const Dashboard = () => {
                                             </select>
                                         </td>
                                         <td>
-                                            <button 
-                                                className={reportStyles.actionBtn}
-                                                onClick={() => setSelectedRecordId(record.id)}
-                                                title="View Report PDF"
-                                            >
-                                                <FileText size={14} /> PDF
-                                            </button>
+                                            <div style={{ display: 'flex', gap: '5px' }}>
+                                                <button 
+                                                    className={reportStyles.actionBtn}
+                                                    onClick={() => setSelectedRecordId(record.id)}
+                                                    title="View Report PDF"
+                                                >
+                                                    <FileText size={14} /> PDF
+                                                </button>
+                                                <button 
+                                                    className={reportStyles.actionBtn}
+                                                    style={{ background: '#059669' }}
+                                                    onClick={() => handleSendEmail(record.id)}
+                                                    title="Send/Resend Email"
+                                                >
+                                                    <Mail size={14} /> Mail
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))

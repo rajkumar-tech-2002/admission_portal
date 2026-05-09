@@ -3,6 +3,7 @@ import html2pdf from 'html2pdf.js';
 import { Download, X, Loader } from 'lucide-react';
 import apiService from '../../services/api.service';
 import styles from '../css/RecordReport.module.css';
+import { formatDate } from '../../utils/dateFormatter';
 import logoImg from '../../assets/report-logo.png';
 
 const RecordReport = ({ recordId, onClose }) => {
@@ -47,14 +48,6 @@ const RecordReport = ({ recordId, onClose }) => {
         }
     };
 
-    const formatDate = (dateStr) => {
-        if (!dateStr) return '';
-        const d = new Date(dateStr);
-        const dd = String(d.getDate()).padStart(2, '0');
-        const mm = String(d.getMonth() + 1).padStart(2, '0');
-        const yyyy = d.getFullYear();
-        return `${dd}-${mm}-${yyyy}`;
-    };
 
     const formatTime = (dateStr) => {
         if (!dateStr) return '';
@@ -119,74 +112,74 @@ const RecordReport = ({ recordId, onClose }) => {
                                 <tbody>
                                     {/* Enquiry Number + Admission Date + Time */}
                                     <tr>
-                                        <td className={styles.metaRow}>
-                                            Enquiry Number: <strong>{record.reg_id}</strong>
+                                        <td className={styles.metaRow} style={{ borderRight: '1px solid #000', width: '45%' }}>
+                                            Enquiry Number : {record.reg_id}
                                         </td>
                                         <td className={styles.metaRow} style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-                                            <strong>Admission Date:</strong> {formatDate(record.admission_date_time)}
+                                            <strong>Admission Date :</strong> {formatDate(record.admission_date_time)}
                                             &nbsp;&nbsp;&nbsp;&nbsp;
-                                            <strong>Time:</strong> {formatTime(record.admission_date_time)}
+                                            <strong>Time :</strong> {formatTime(record.admission_date_time)}
                                         </td>
                                     </tr>
 
                                     {/* +2 Reg. Number */}
                                     <tr>
                                         <td className={styles.metaRow} colSpan="2">
-                                            +2 Reg. Number: <strong>{record.reg_no_12th || ''}</strong>
+                                            +2 Reg. Number : {record.reg_no_12th || ''}
                                         </td>
                                     </tr>
 
                                     {/* 1. Student Name - BOLD */}
                                     <tr>
                                         <td className={styles.fieldLabelBold} colSpan="2">
-                                            1. Student Name: {(record.std_name || '').toUpperCase()}
+                                            1. Student Name : {(record.std_name || '').toUpperCase()}
                                         </td>
                                     </tr>
 
                                     {/* 2. Date of Birth */}
                                     <tr>
                                         <td className={styles.fieldLabel} colSpan="2">
-                                            2. Date of Birth: {formatDate(record.std_dob)}
+                                            2. Date of Birth : {formatDate(record.std_dob)}
                                         </td>
                                     </tr>
 
                                     {/* 3. Contact Number - BOLD */}
                                     <tr>
                                         <td className={styles.fieldLabelBold} colSpan="2">
-                                            3. Contact Number: {record.std_mobile_no || ''}
+                                            3. Contact Number : {record.std_mobile_no || ''}
                                         </td>
                                     </tr>
 
                                     {/* 4. Last Studied + Last Studied value on right */}
                                     <tr>
                                         <td className={styles.fieldLabel}>
-                                            4. Name of the College / School Last Studied: {(record.last_studied_name || '').toUpperCase()}
+                                            4. Name of the College / School Last Studied : {(record.last_studied_name || '').toUpperCase()}
                                         </td>
                                         <td className={styles.fieldLabel} style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-                                            Last Studied: {record.last_studied || ''}
+                                            Last Studied : {record.last_studied || ''}
                                         </td>
                                     </tr>
 
                                     {/* 5. Course */}
                                     <tr>
                                         <td className={styles.fieldLabel} colSpan="2">
-                                            5. Name of the Course: {record.selected_dept}-{record.selected_course}
+                                            5. Name of the Course : {record.selected_course}
                                         </td>
                                     </tr>
 
                                     {/* 6. Community + Quota */}
                                     <tr>
                                         <td className={styles.fieldLabel} colSpan="2">
-                                            6. Community: {record.community || ''}
+                                            6. Community : {record.community || ''}
                                             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                            Quota: {record.admission_quota || ''}
+                                            Quota : {record.admission_quota || ''}
                                         </td>
                                     </tr>
 
                                     {/* 7. First Graduate */}
                                     <tr>
                                         <td className={styles.fieldLabel} colSpan="2">
-                                            7. First Graduate:
+                                            7. First Graduate :
                                         </td>
                                     </tr>
 
@@ -194,25 +187,14 @@ const RecordReport = ({ recordId, onClose }) => {
                                     <tr>
                                         <td className={styles.fieldLabel} colSpan="2">
                                             8. Admission Recommended Person :
-                                        </td>
-                                    </tr>
-
-                                    {/* Reference sub-row */}
-                                    <tr>
-                                        <td colSpan="2" style={{ paddingLeft: '36px', paddingRight: '8px' }}>
-                                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                                <tbody>
-                                                    <tr>
-                                                        <td style={{ padding: '2px 0', width: '90px', verticalAlign: 'top', fontSize: '10px' }}>
-                                                            {record.reference_type || ''}
-                                                        </td>
-                                                        <td style={{ padding: '2px 0', fontSize: '10px', verticalAlign: 'top' }}>
-                                                            {record.reference_name || ''}
-                                                            {record.reference_contact_no ? `.${record.reference_contact_no}` : ''}
-                                                        </td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
+                                            <br />
+                                            <div style={{ marginLeft: '55px', display: 'flex', gap: '20px' }}>
+                                                <div style={{ minWidth: '150px' }}>{record.reference_type || ''}</div>
+                                                <div>
+                                                    {record.reference_dept || ''} {record.reference_dept && record.reference_name ? ' - ' : ''} {record.reference_name || ''}
+                                                    {record.reference_contact_no ? ` - ${record.reference_contact_no}` : ''}
+                                                </div>
+                                            </div>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -233,11 +215,11 @@ const RecordReport = ({ recordId, onClose }) => {
                                         <td>&nbsp;</td>
                                     </tr>
                                     <tr>
-                                        <td>Scholarship Amount :</td>
+                                        <td>Scholarship Amount</td>
                                         <td>&nbsp;</td>
                                     </tr>
                                     <tr>
-                                        <td>Fees to be Paid :</td>
+                                        <td>Fees to be Paid</td>
                                         <td>&nbsp;</td>
                                     </tr>
                                 </tbody>
