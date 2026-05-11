@@ -47,23 +47,38 @@ class Record {
         const config = masterRows.length > 0 ? masterRows[0] : { date_count: 3, archive_status: 'Enquiry,Discontinue' };
         
         const daysLimit = config.date_count;
-        const targetStatuses = config.archive_status.split(',').map(s => s.trim());
+        const targetStatuses = (config.archive_status || '').split(',').map(s => s.trim()).filter(s => s);
 
-        if (targetStatuses.length === 0) return;
+        if (targetStatuses.length === 0) {
+            // If no statuses are targeted, all archived records should be moved back to 'New'
+            await db.execute("UPDATE record_master SET archive_status = 'New' WHERE archive_status = 'Archived'");
+            return;
+        }
 
-        // Create placeholders for the IN clause
         const placeholders = targetStatuses.map(() => '?').join(',');
 
-        // Update records to 'Archived' if they match the status and date limit
-        const sql = `
+        // 1. Move to 'Archived' if they match the target status AND exceed the days limit
+        const archiveSql = `
             UPDATE record_master 
             SET archive_status = 'Archived' 
             WHERE archive_status = 'New' 
             AND admission_status IN (${placeholders})
-            AND admission_date_time < DATE_SUB(NOW(), INTERVAL ? DAY)
+            AND DATEDIFF(NOW(), admission_date_time) >= ?
         `;
-        
-        await db.execute(sql, [...targetStatuses, daysLimit]);
+        await db.execute(archiveSql, [...targetStatuses, daysLimit]);
+
+        // 2. Move back to 'New' if they NO LONGER match the criteria
+        // (This happens if the user increases the days limit or removes a status from the archive targets)
+        const restoreSql = `
+            UPDATE record_master 
+            SET archive_status = 'New' 
+            WHERE archive_status = 'Archived' 
+            AND (
+                admission_status NOT IN (${placeholders})
+                OR DATEDIFF(NOW(), admission_date_time) < ?
+            )
+        `;
+        await db.execute(restoreSql, [...targetStatuses, daysLimit]);
     }
 
     static async getAll(filters) {

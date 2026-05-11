@@ -119,7 +119,8 @@ const Dashboard = () => {
     const handleExport = () => {
         if (records.length === 0) return toast.error('No records to export');
         
-        const exportData = records.map(r => ({
+        const exportData = records.map((r, index) => ({
+            'S.No': index + 1,
             'Reg ID': r.reg_id,
             'Name': r.std_name,
             'Mobile': r.std_mobile_no,
@@ -271,6 +272,7 @@ const Dashboard = () => {
                     <table className={styles.table}>
                         <thead>
                             <tr>
+                                <th>S.No</th>
                                 <th>Reg_ID</th>
                                 <th>Date & Time</th>
                                 <th>Name</th>
@@ -288,8 +290,9 @@ const Dashboard = () => {
                         </thead>
                         <tbody>
                             {currentRecords.length > 0 ? (
-                                currentRecords.map((record) => (
+                                currentRecords.map((record, index) => (
                                     <tr key={record.id}>
+                                        <td>{indexOfFirstRecord + index + 1}</td>
                                         <td><strong>{record.reg_id}</strong></td>
                                         <td>{formatDateTime(record.admission_date_time)}</td>
                                         <td>{record.std_name}</td>
