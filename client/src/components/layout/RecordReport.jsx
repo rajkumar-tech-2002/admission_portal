@@ -189,7 +189,10 @@ const RecordReport = ({ recordId, onClose }) => {
                                             8. Admission Recommended Person :
                                             <br />
                                             <div style={{ marginLeft: '55px', display: 'flex', gap: '20px' }}>
-                                                <div style={{ minWidth: '150px' }}>{record.reference_type || ''}</div>
+                                                <div style={{ minWidth: '150px' }}>
+                                                    {record.reference_type || ''}
+                                                    {record.reference_type === 'Student' && record.reference_way ? ` (${record.reference_way})` : ''}
+                                                </div>
                                                 <div>
                                                     {record.reference_dept || ''} {record.reference_dept && record.reference_name ? ' - ' : ''} {record.reference_name || ''}
                                                     {record.reference_contact_no ? ` - ${record.reference_contact_no}` : ''}

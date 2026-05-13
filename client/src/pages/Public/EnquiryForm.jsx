@@ -86,7 +86,8 @@ const EnquiryForm = () => {
                 window.scrollTo(0, 0);
             }
         } catch (error) {
-            toast.error('Failed to submit enquiry. Please try again.');
+            const errorMsg = error.response?.data?.message || 'Failed to submit enquiry. Please try again.';
+            toast.error(errorMsg);
         } finally {
             setLoading(false);
         }

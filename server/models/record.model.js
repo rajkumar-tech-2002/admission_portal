@@ -19,6 +19,18 @@ class Record {
     }
 
     static async create(recordData) {
+        // Check for duplicate Aadhaar number with archive_status = 'New'
+        const [existing] = await db.execute(
+            'SELECT id FROM record_master WHERE aadhaar_no = ? AND archive_status = "New" LIMIT 1',
+            [recordData.aadhaar_no]
+        );
+
+        if (existing.length > 0) {
+            const error = new Error('A record with this Aadhaar number already exists and is currently active.');
+            error.statusCode = 400;
+            throw error;
+        }
+
         const regId = await this.generateRegId();
         const sql = `
             INSERT INTO record_master (

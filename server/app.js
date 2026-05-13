@@ -18,7 +18,12 @@ app.use('/api/records', recordRoutes);
 // Global Error Handler
 app.use((err, req, res, next) => {
     console.error(err.stack);
-    res.status(500).json({ success: false, message: 'Something went wrong!', error: err.message });
+    const statusCode = err.statusCode || 500;
+    res.status(statusCode).json({ 
+        success: false, 
+        message: statusCode === 500 ? 'Something went wrong!' : err.message,
+        error: err.message 
+    });
 });
 
 module.exports = app;

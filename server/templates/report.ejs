@@ -70,7 +70,12 @@
                 <td colspan="2">
                     <span class="boldLabel">8. Admission Recommended Person :</span>
                     <div class="refRow">
-                        <div class="refType"><%= record.reference_type || '' %></div>
+                        <div class="refType">
+                            <%= record.reference_type || '' %>
+                            <% if (record.reference_type === 'Student' && record.reference_way) { %>
+                                (<%= record.reference_way %>)
+                            <% } %>
+                        </div>
                         <div>
                             <%= record.reference_dept || '' %> 
                             <% if (record.reference_dept && record.reference_name) { %> - <% } %> 
