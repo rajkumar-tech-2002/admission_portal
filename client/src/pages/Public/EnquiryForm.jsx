@@ -159,7 +159,7 @@ const EnquiryForm = () => {
                                     <input type="text" name="reg_no_12th" value={formData.reg_no_12th} onChange={handleChange} className="form-input" required />
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">Last Studied Name</label>
+                                    <label className="form-label">Last Studied School / College</label>
                                     <input type="text" name="last_studied_name" value={formData.last_studied_name} onChange={handleChange} className="form-input" />
                                 </div>
                                 <div className="form-group">
