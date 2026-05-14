@@ -22,13 +22,13 @@ class EmailService {
             from: `"Nandha Educational Institutions" <${process.env.SMTP_USER}>`,
             to: record.reference_email,
             subject: `Admission Enquiry Report - ${record.reg_id}`,
-            text: `Dear ${record.reference_name || 'Referrer'},\n\nPlease find the attached Admission Enquiry Report for ${record.std_name}.\n\nReg ID: ${record.reg_id}\n\nRegards,\nNandha Educational Institutions`,
-            attachments: [
+            text: `Dear ${record.reference_name || 'Referrer'},\n\nPlease find the Admission Enquiry details for ${record.std_name}.\n\nReg ID: ${record.reg_id}\n\nRegards,\nNandha Educational Institutions`,
+            attachments: pdfBuffer ? [
                 {
                     filename: `Enquiry_Report_${record.reg_id}.pdf`,
                     content: pdfBuffer
                 }
-            ]
+            ] : []
         };
 
         try {

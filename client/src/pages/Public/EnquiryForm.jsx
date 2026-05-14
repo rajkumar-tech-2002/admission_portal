@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
 import apiService from '../../services/api.service';
 import Navbar from '../../components/layout/Navbar';
 import Footer from '../../components/layout/Footer';
 import styles from '../../components/css/EnquiryForm.module.css';
 import toast from 'react-hot-toast';
 import { confirmAction } from '../../components/layout/Toast';
+import RecordReport from '../../components/layout/RecordReport';
 
 const EnquiryForm = () => {
     const [masterData, setMasterData] = useState({
@@ -22,6 +24,8 @@ const EnquiryForm = () => {
 
     const [loading, setLoading] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
+    const [isGenerating, setIsGenerating] = useState(false);
+    const reportCaptureRef = useRef(null);
 
     useEffect(() => {
         const fetchMasterData = async () => {
@@ -48,6 +52,8 @@ const EnquiryForm = () => {
                 [name]: value, 
                 reference_way: selectedRef ? selectedRef.way : '' 
             });
+        } else if (name === 'reference_institution') {
+            setFormData({ ...formData, [name]: value, reference_dept: '' });
         } else {
             setFormData({ ...formData, [name]: value });
         }
@@ -69,8 +75,51 @@ const EnquiryForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+        setIsGenerating(true);
         try {
-            const response = await apiService.post('/records', formData);
+            // 1. Prepare PDF on frontend
+            // We use the current formData + a temporary date for the PDF capture
+            const pdfData = { 
+                ...formData, 
+                reg_id: 'PENDING', 
+                admission_date_time: new Date().toISOString() 
+            };
+            
+            // Wait a moment for the hidden report to be ready
+            await new Promise(resolve => setTimeout(resolve, 800));
+
+            const element = document.getElementById('report-capture-area');
+            const opt = {
+                margin: 0,
+                filename: 'Enquiry_Report.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { 
+                    scale: 2, 
+                    useCORS: true, 
+                    letterRendering: true,
+                    logging: false
+                },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Generate PDF as Blob
+            const html2pdf = (await import('html2pdf.js')).default;
+            const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
+
+            // 2. Prepare FormData
+            const payload = new FormData();
+            // Append all form fields
+            Object.keys(formData).forEach(key => {
+                payload.append(key, formData[key]);
+            });
+            // Append the PDF blob
+            payload.append('pdf', pdfBlob, 'Enquiry_Report.pdf');
+
+            // 3. Submit
+            // Use direct axios to avoid any global config interference
+            const apiBase = import.meta.env.PROD ? '/api' : 'http://localhost:5000/api';
+            const response = await axios.post(`${apiBase}/records`, payload);
+
             if (response.data.success) {
                 const msg = `Enquiry submitted successfully! ID: ${response.data.data.reg_id}`;
                 toast.success(msg);
@@ -86,10 +135,12 @@ const EnquiryForm = () => {
                 window.scrollTo(0, 0);
             }
         } catch (error) {
+            console.error('Submission error:', error);
             const errorMsg = error.response?.data?.message || 'Failed to submit enquiry. Please try again.';
             toast.error(errorMsg);
         } finally {
             setLoading(false);
+            setIsGenerating(false);
         }
     };
 
@@ -238,11 +289,35 @@ const EnquiryForm = () => {
                                 </div>
                                 <div className="form-group">
                                     <label className="form-label">Reference Institution</label>
-                                    <input type="text" name="reference_institution" value={formData.reference_institution} onChange={handleChange} className="form-input" />
+                                    <select 
+                                        name="reference_institution" 
+                                        value={formData.reference_institution} 
+                                        onChange={handleChange} 
+                                        className="form-select"
+                                    >
+                                        <option value="">Select Institution</option>
+                                        {[...new Set(masterData.departments.map(d => d.institution))].filter(Boolean).map(inst => (
+                                            <option key={inst} value={inst}>{inst}</option>
+                                        ))}
+                                    </select>
                                 </div>
                                 <div className="form-group">
                                     <label className="form-label">Reference Department</label>
-                                    <input type="text" name="reference_dept" value={formData.reference_dept} onChange={handleChange} className="form-input" />
+                                    <select 
+                                        name="reference_dept" 
+                                        value={formData.reference_dept} 
+                                        onChange={handleChange} 
+                                        className="form-select"
+                                        disabled={!formData.reference_institution}
+                                    >
+                                        <option value="">Select Department</option>
+                                        {masterData.departments
+                                            .filter(d => d.institution === formData.reference_institution)
+                                            .map(d => (
+                                                <option key={d.id} value={d.dept_name}>{d.dept_name}</option>
+                                            ))
+                                        }
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -264,6 +339,22 @@ const EnquiryForm = () => {
                 </div>
             </div>
             <Footer />
+            
+            {/* Hidden area for PDF capture - only rendered during submission to save performance */}
+            {isGenerating && (
+                <div style={{ position: 'fixed', left: '-9999px', top: 0, zIndex: -1, width: '210mm' }}>
+                    <div id="report-capture-area" style={{ background: '#fff' }}>
+                        <RecordReport 
+                            data={{ 
+                                ...formData, 
+                                reg_id: '4XXX', 
+                                admission_date_time: new Date().toISOString() 
+                            }} 
+                            standalone={true} 
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

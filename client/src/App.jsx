@@ -9,6 +9,7 @@ import MasterManagementPage from './pages/Admin/Master/MasterManagementPage';
 import EmailLogs from './pages/Admin/Master/EmailLogs';
 import AdminLayout from './components/layout/AdminLayout';
 import ToastProvider from './components/layout/ToastProvider';
+import ReportPrint from './pages/Admin/ReportPrint';
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
@@ -116,6 +117,9 @@ function App() {
 
           <Route path="*" element={<Navigate to="dashboard" replace />} />
         </Route>
+        
+        {/* Dedicated Print Route - Outside AdminLayout for clean print */}
+        <Route path="/report-print/:id" element={<ReportPrint />} />
       </Routes>
     </Router>
   );

@@ -2,7 +2,14 @@ const db = require('../config/db.config');
 
 class Master {
     static async getAllDepartments() {
-        const [rows] = await db.execute('SELECT * FROM department_master');
+        // We select the raw department and also parse it for institution/dept_name
+        const [rows] = await db.execute(`
+            SELECT *, 
+                SUBSTRING_INDEX(department, '-', 1) AS institution,
+                SUBSTRING(department, LENGTH(SUBSTRING_INDEX(department, '-', 1)) + 2) AS dept_name
+            FROM department_master
+            ORDER BY department
+        `);
         return rows;
     }
 

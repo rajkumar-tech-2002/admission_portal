@@ -2,33 +2,49 @@ const db = require('../config/db.config');
 
 class Record {
     static async generateRegId() {
-        const currentYear = new Date().getFullYear().toString();
-        // Generate the next auto increment reg_id like '2026000001'
+        // Fetch the latest numeric reg_id that is in the new format (length < 8)
+        // This ignores the old 2026000001 format which was 10 digits long
         const [rows] = await db.execute(
-            'SELECT reg_id FROM record_master WHERE reg_id LIKE ? ORDER BY reg_id DESC LIMIT 1',
-            [`${currentYear}%`]
+            'SELECT reg_id FROM record_master WHERE LENGTH(reg_id) < 8 ORDER BY CAST(reg_id AS UNSIGNED) DESC LIMIT 1'
         );
 
-        let nextId = 1;
+        let nextId = 4000;
         if (rows.length > 0) {
-            const lastRegId = String(rows[0].reg_id);
-            const lastIdSequence = parseInt(lastRegId.substring(4), 10);
-            nextId = lastIdSequence + 1;
+            const lastId = parseInt(rows[0].reg_id, 10);
+            if (!isNaN(lastId)) {
+                nextId = lastId + 1;
+            }
         }
-        return currentYear + nextId.toString().padStart(6, '0');
+        return nextId.toString();
     }
 
     static async create(recordData) {
         // Check for duplicate Aadhaar number with archive_status = 'New'
-        const [existing] = await db.execute(
-            'SELECT id FROM record_master WHERE aadhaar_no = ? AND archive_status = "New" LIMIT 1',
-            [recordData.aadhaar_no]
-        );
+        if (recordData.aadhaar_no) {
+            const [existingAadhaar] = await db.execute(
+                'SELECT id FROM record_master WHERE aadhaar_no = ? AND archive_status = "New" LIMIT 1',
+                [recordData.aadhaar_no]
+            );
 
-        if (existing.length > 0) {
-            const error = new Error('A record with this Aadhaar number already exists and is currently active.');
-            error.statusCode = 400;
-            throw error;
+            if (existingAadhaar.length > 0) {
+                const error = new Error('A record with this Aadhaar number already exists and is currently active.');
+                error.statusCode = 400;
+                throw error;
+            }
+        }
+
+        // Check for duplicate 12th Registration Number with archive_status = 'New'
+        if (recordData.reg_no_12th) {
+            const [existingReg] = await db.execute(
+                'SELECT id FROM record_master WHERE reg_no_12th = ? AND archive_status = "New" LIMIT 1',
+                [recordData.reg_no_12th]
+            );
+
+            if (existingReg.length > 0) {
+                const error = new Error('A record with this 12th Registration Number already exists and is currently active.');
+                error.statusCode = 400;
+                throw error;
+            }
         }
 
         const regId = await this.generateRegId();
