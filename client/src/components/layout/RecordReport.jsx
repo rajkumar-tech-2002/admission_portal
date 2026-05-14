@@ -176,7 +176,7 @@ const RecordReport = ({ recordId, data, onClose, standalone = false }) => {
                             <td className={styles.fieldLabel} colSpan="2">
                                 8. Admission Recommended Person :
                                 <br />
-                                <div style={{ marginLeft: '55px', display: 'flex', gap: '20px' }}>
+                                <div style={{ marginLeft: '55px', marginTop: '12px', marginBottom: '12px', display: 'flex', gap: '20px' }}>
                                     <div style={{ minWidth: '150px' }}>
                                         {record.reference_type || ''}
                                         {record.reference_type === 'Student' && record.reference_way ? ` (${record.reference_way})` : ''}
