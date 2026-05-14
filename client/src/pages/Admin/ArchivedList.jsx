@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import * as XLSX from 'xlsx';
 import { Download, Search, ArchiveRestore, FileText, Mail } from 'lucide-react';
 import apiService from '../../services/api.service';
@@ -11,7 +12,8 @@ import { formatDate, formatDateTime } from '../../utils/dateFormatter';
 const ArchivedList = () => {
     const [records, setRecords] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [selectedRecordId, setSelectedRecordId] = useState(null);
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [captureData, setCaptureData] = useState(null);
     
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
@@ -47,12 +49,45 @@ const ArchivedList = () => {
     };
 
     const handleSendEmail = async (id) => {
-        const loadingToast = toast.loading('Sending email...');
+        const record = records.find(r => r.id === id);
+        if (!record) return toast.error('Record data not found');
+
+        const loadingToast = toast.loading('Generating PDF and sending email...');
         try {
-            const response = await apiService.post(`/records/${id}/send-email`);
+            // 1. Setup capture data
+            setCaptureData(record);
+            setIsGenerating(true);
+
+            // 2. Wait for hidden render
+            await new Promise(resolve => setTimeout(resolve, 800));
+
+            // 3. Capture PDF
+            const element = document.getElementById('resend-archive-capture-area');
+            const opt = {
+                margin: 0,
+                filename: `Enquiry_Report_${record.reg_id}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            const html2pdf = (await import('html2pdf.js')).default;
+            const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
+
+            // 4. Prepare FormData
+            const payload = new FormData();
+            payload.append('pdf', pdfBlob, `Enquiry_Report_${record.reg_id}.pdf`);
+
+            // 5. Send to API
+            const apiBase = import.meta.env.PROD ? '/api' : 'http://localhost:5000/api';
+            const response = await axios.post(`${apiBase}/records/${id}/send-email`, payload, {
+                headers: { 
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+
             if (response.data.success) {
-                toast.success('Email sent successfully', { id: loadingToast });
-                // Refresh records to update email status
+                toast.success('Email sent successfully with PDF!', { id: loadingToast });
                 fetchRecords();
             } else {
                 toast.error(response.data.message || 'Failed to send email', { id: loadingToast });
@@ -60,6 +95,9 @@ const ArchivedList = () => {
         } catch (error) {
             console.error('Error sending email:', error);
             toast.error(error.response?.data?.message || 'Failed to send email', { id: loadingToast });
+        } finally {
+            setIsGenerating(false);
+            setCaptureData(null);
         }
     };
 
@@ -247,8 +285,10 @@ const ArchivedList = () => {
                                                 <div style={{ display: 'flex', gap: '5px' }}>
                                                     <button 
                                                         className={reportStyles.actionBtn}
-                                                        onClick={() => setSelectedRecordId(record.id)}
-                                                        title="View Report PDF"
+                                                        onClick={() => {
+                                                            window.open(`/report-print/${record.id}`, '_blank');
+                                                        }}
+                                                        title="View PDF"
                                                     >
                                                         <FileText size={14} /> PDF
                                                     </button>
@@ -307,12 +347,20 @@ const ArchivedList = () => {
                     </div>
                 )}
             </div>
-
-            {/* PDF Report Modal */}
-            {selectedRecordId && (
-                <RecordReport recordId={selectedRecordId} onClose={() => setSelectedRecordId(null)} />
+            
+            {/* Hidden capture area for resending email with PDF */}
+            {isGenerating && captureData && (
+                <div style={{ position: 'fixed', left: '-9999px', top: 0, zIndex: -1, width: '210mm' }}>
+                    <div id="resend-archive-capture-area" style={{ background: '#fff' }}>
+                        <RecordReport 
+                            data={captureData} 
+                            standalone={true} 
+                        />
+                    </div>
+                </div>
             )}
         </div>
+
     );
 };
 

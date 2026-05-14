@@ -4,16 +4,18 @@ const emailService = require('../services/email.service');
 
 exports.createRecord = async (req, res, next) => {
     try {
+        console.log('[DEBUG] createRecord triggered');
+        console.log('[DEBUG] Body fields:', Object.keys(req.body));
+        console.log('[DEBUG] File:', req.file ? `Received (${req.file.size} bytes)` : 'MISSING');
+        
         const result = await Record.create(req.body);
-        
-        // Fetch the full record to include all details for PDF (like reg_id)
+        const pdfFile = req.file; // Received via multer
         const fullRecord = await Record.getById(result.id);
-        
-        // Trigger Email Sending Asynchronously (don't wait for it to respond to user)
         if (fullRecord && fullRecord.reference_email) {
             (async () => {
                 try {
-                    const pdfBuffer = await pdfService.generateEnquiryPdf(fullRecord);
+                    // Use the PDF buffer sent from the frontend
+                    const pdfBuffer = pdfFile ? pdfFile.buffer : null;
                     await emailService.sendEnquiryEmail(fullRecord, pdfBuffer);
                 } catch (err) {
                     console.error('Auto-email background process failed:', err);
@@ -110,8 +112,8 @@ exports.sendEmail = async (req, res, next) => {
             return res.status(400).json({ success: false, message: 'No reference email found for this record' });
         }
         
-        // Generate PDF and Send Email
-        const pdfBuffer = await pdfService.generateEnquiryPdf(record);
+        // Use the PDF buffer sent from the frontend if available
+        const pdfBuffer = req.file ? req.file.buffer : null;
         const result = await emailService.sendEnquiryEmail(record, pdfBuffer);
         
         if (result.success) {
@@ -122,4 +124,16 @@ exports.sendEmail = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
+};
+
+exports.viewPdf = async (req, res, next) => {
+    res.status(410).send(`
+        <html>
+            <body style="font-family: sans-serif; text-align: center; padding: 50px;">
+                <h2>Backend PDF Generation is Disabled</h2>
+                <p>PDFs are now generated directly in the browser for better performance.</p>
+                <p>Please use the Print button in the Dashboard.</p>
+            </body>
+        </html>
+    `);
 };
