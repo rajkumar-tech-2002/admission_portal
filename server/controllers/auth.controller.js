@@ -32,6 +32,16 @@ exports.login = async (req, res, next) => {
     }
 };
 
+exports.logout = async (req, res, next) => {
+    try {
+        // In a JWT system, logout is primarily handled by the client by deleting the token.
+        // However, we can perform server-side logging or session cleanup if needed.
+        res.status(200).json({ success: true, message: 'Logged out successfully' });
+    } catch (error) {
+        next(error);
+    }
+};
+
 exports.changePassword = async (req, res, next) => {
     try {
         const { oldPassword, newPassword } = req.body;

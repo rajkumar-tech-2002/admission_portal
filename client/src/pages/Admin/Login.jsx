@@ -21,7 +21,7 @@ const Login = () => {
         try {
             const response = await apiService.post('/auth/login', { username, password });
             if (response.data.success) {
-                localStorage.setItem('token', response.data.token);
+                sessionStorage.setItem('token', response.data.token);
                 navigate('/admin/dashboard');
             }
         } catch (err) {

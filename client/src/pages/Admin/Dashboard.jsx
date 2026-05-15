@@ -127,7 +127,7 @@ const Dashboard = () => {
             const apiBase = import.meta.env.PROD ? '/api' : 'http://localhost:5000/api';
             const response = await axios.post(`${apiBase}/records/${id}/send-email`, payload, {
                 headers: { 
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${sessionStorage.getItem('token')}`
                 }
             });
 

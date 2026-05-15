@@ -12,7 +12,7 @@ import ToastProvider from './components/layout/ToastProvider';
 import ReportPrint from './pages/Admin/ReportPrint';
 
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
   if (!token) {
     return <Navigate to="/admin/login" />;
   }
@@ -119,7 +119,11 @@ function App() {
         </Route>
         
         {/* Dedicated Print Route - Outside AdminLayout for clean print */}
-        <Route path="/report-print/:id" element={<ReportPrint />} />
+        <Route path="/report-print/:id" element={
+          <ProtectedRoute>
+            <ReportPrint />
+          </ProtectedRoute>
+        } />
       </Routes>
     </Router>
   );

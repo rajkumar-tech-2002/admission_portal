@@ -7,6 +7,8 @@ import {
 import Navbar from './Navbar';
 import Footer from './Footer';
 import styles from '../css/AdminLayout.module.css';
+import useIdleTimer from '../../hooks/useIdleTimer';
+import { secureLogout } from '../../utils/auth';
 
 const AdminLayout = ({ children }) => {
     const navigate = useNavigate();
@@ -26,9 +28,11 @@ const AdminLayout = ({ children }) => {
     }, [location.pathname]);
 
     const handleLogout = () => {
-        localStorage.removeItem('token');
-        navigate('/admin/login');
+        secureLogout(navigate);
     };
+
+    // Initialize Idle Timer (15 minutes)
+    useIdleTimer(handleLogout, 15 * 60 * 1000);
 
     const toggleSidebar = () => {
         setIsSidebarOpen(!isSidebarOpen);
