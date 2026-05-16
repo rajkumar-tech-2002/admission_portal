@@ -182,7 +182,10 @@ const RecordReport = ({ recordId, data, onClose, standalone = false }) => {
                                         {record.reference_type === 'Student' && record.reference_way ? ` (${record.reference_way})` : ''}
                                     </div>
                                     <div>
-                                        {record.reference_dept || ''} {record.reference_dept && record.reference_name ? ' - ' : ''} {record.reference_name || ''}
+                                        {record.reference_institution && <span>{record.reference_institution} / </span>}
+                                        {record.reference_dept || ''} 
+                                        {(record.reference_institution || record.reference_dept) && record.reference_name ? ' - ' : ''} 
+                                        {record.reference_name || ''}
                                         {record.reference_contact_no ? ` - ${record.reference_contact_no}` : ''}
                                     </div>
                                 </div>

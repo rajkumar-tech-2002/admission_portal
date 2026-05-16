@@ -52,8 +52,6 @@ const EnquiryForm = () => {
                 [name]: value, 
                 reference_way: selectedRef ? selectedRef.way : '' 
             });
-        } else if (name === 'reference_institution') {
-            setFormData({ ...formData, [name]: value, reference_dept: '' });
         } else {
             setFormData({ ...formData, [name]: value });
         }
@@ -289,35 +287,25 @@ const EnquiryForm = () => {
                                 </div>
                                 <div className="form-group">
                                     <label className="form-label">Reference Institution</label>
-                                    <select 
+                                    <input 
+                                        type="text"
                                         name="reference_institution" 
                                         value={formData.reference_institution} 
                                         onChange={handleChange} 
-                                        className="form-select"
-                                    >
-                                        <option value="">Select Institution</option>
-                                        {[...new Set(masterData.departments.map(d => d.institution))].filter(Boolean).map(inst => (
-                                            <option key={inst} value={inst}>{inst}</option>
-                                        ))}
-                                    </select>
+                                        className="form-input"
+                                        placeholder="Enter Institution"
+                                    />
                                 </div>
                                 <div className="form-group">
                                     <label className="form-label">Reference Department</label>
-                                    <select 
+                                    <input 
+                                        type="text"
                                         name="reference_dept" 
                                         value={formData.reference_dept} 
                                         onChange={handleChange} 
-                                        className="form-select"
-                                        disabled={!formData.reference_institution}
-                                    >
-                                        <option value="">Select Department</option>
-                                        {masterData.departments
-                                            .filter(d => d.institution === formData.reference_institution)
-                                            .map(d => (
-                                                <option key={d.id} value={d.dept_name}>{d.dept_name}</option>
-                                            ))
-                                        }
-                                    </select>
+                                        className="form-input"
+                                        placeholder="Enter Department"
+                                    />
                                 </div>
                             </div>
                         </div>
