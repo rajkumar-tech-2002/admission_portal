@@ -17,7 +17,7 @@ const ArchivedList = () => {
     
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
-    const [recordsPerPage, setRecordsPerPage] = useState(10);
+    const [recordsPerPage, setRecordsPerPage] = useState(100);
     
     // Filters
     const [search, setSearch] = useState('');
