@@ -171,8 +171,8 @@ const EnquiryForm = () => {
                                     <input type="text" name="std_name" value={formData.std_name} onChange={handleChange} className="form-input" required />
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">Date of Birth</label>
-                                    <input type="date" name="std_dob" value={formData.std_dob} onChange={handleChange} className="form-input" />
+                                    <label className="form-label">Date of Birth <span className={styles.required}>*</span></label>
+                                    <input type="date" name="std_dob" value={formData.std_dob} onChange={handleChange} className="form-input" required/>
                                 </div>
                                 <div className="form-group">
                                     <label className="form-label">Mobile Number <span className={styles.required}>*</span></label>
@@ -234,7 +234,7 @@ const EnquiryForm = () => {
                                     </select>
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">Selected UG/PG</label>
+                                    <label className="form-label">Selected UG/PG <span className={styles.required}>*</span></label>
                                     <select name="selected_ug_pg" value={formData.selected_ug_pg} onChange={handleChange} className="form-select" required>
                                         <option value="">Select Level</option>
                                         <option value="UG">UG</option>
